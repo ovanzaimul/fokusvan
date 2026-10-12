@@ -10,17 +10,17 @@ import {
 import { Badge } from "../../components/ui/badge";
 import type { Activity } from "./ActivitiesContext";
 
-interface ActivityListProps {
-  activityList: Activity[];
+interface ActiviesProps {
+  activities: Activity[];
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
 }
 
-export default function ActivityList({
-  activityList,
+export default function Activities({
+  activities,
   activeActivityId,
   updateActiveActivityId,
-}: ActivityListProps) {
+}: ActiviesProps) {
   return (
     <Card className="w-lg py-4">
       <CardHeader className="flex items-center">
@@ -30,7 +30,7 @@ export default function ActivityList({
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
-        {activityList.map((item) => {
+        {activities.map((item) => {
           return (
             <Button
               variant="ghost"

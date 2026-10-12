@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { useActivities } from "./features/activities/ActivitiesContext";
 import Timer from "./features/timer/Timer";
-import ActivityList from "./features/activities/Activites";
 import AuthButton from "./features/auth";
+import Activities from "./features/activities/Activites";
 
 function App() {
   const {
@@ -30,8 +30,8 @@ function App() {
         onCompleteFocus={completeFocus}
       />
 
-      <ActivityList
-        activityList={activities}
+      <Activities
+        activities={activities}
         activeActivityId={activeActivityId}
         updateActiveActivityId={updateActiveActivityId}
       />
