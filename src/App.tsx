@@ -1,50 +1,17 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useActivities } from "./features/activities/ActivitiesContext";
 import Timer from "./features/timer/Timer";
-import ActivityList from "./features/activity-list/ActivityList";
-
-const activityList = [
-  {
-    id: "1",
-    title: "Working on fokusvan project",
-    estimation: 4,
-    completed: 0,
-    focusMinues: 60,
-    done: false,
-  },
-
-  {
-    id: "3",
-    title: "Learn Backend(GO)",
-    estimation: 4,
-    completed: 0,
-    focusMinues: 60,
-    done: false,
-  },
-];
-
-export interface ActivityList {
-  id: string;
-  title: string;
-  estimation: number;
-  completed: number;
-  focusMinues: number;
-  done: boolean;
-}
-
-function initActivityId() {
-  const activityId = localStorage.getItem("activityId");
-  return activityId;
-}
+import ActivityList from "./features/activities/Activites";
+import AuthButton from "./features/auth";
 
 function App() {
-  const [activities, setActivities] = useState<ActivityList[]>(activityList);
-  const [activeActivityId, setActiveActivityId] = useState<string | null>(
-    initActivityId,
-  );
-  function updateActiveActivityId(id: string) {
-    localStorage.setItem("activityId", id);
-    setActiveActivityId(id);
-  }
+  const {
+    activities,
+    updateActiveActivityId,
+    activeActivityId,
+    setActivities,
+  } = useActivities();
+
   const completeFocus = useCallback(() => {
     setActivities((prev) => {
       return prev.map((t) => {
@@ -53,14 +20,16 @@ function App() {
           : { ...t, completed: t.completed + 1 };
       });
     });
-  }, [activeActivityId]);
+  }, [activeActivityId, setActivities]);
 
   return (
     <div className="dark min-h-screen flex items-center justify-center flex-col gap-5 bg-background p-4">
+      <AuthButton />
       <Timer
         activeActivityId={activeActivityId}
         onCompleteFocus={completeFocus}
       />
+
       <ActivityList
         activityList={activities}
         activeActivityId={activeActivityId}

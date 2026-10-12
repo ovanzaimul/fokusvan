@@ -8,11 +8,10 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-
-import type { ActivityList } from "../../App";
+import type { Activity } from "./ActivitiesContext";
 
 interface ActivityListProps {
-  activityList: ActivityList[];
+  activityList: Activity[];
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
 }
