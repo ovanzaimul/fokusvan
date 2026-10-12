@@ -1,8 +1,7 @@
 import { useCallback } from "react";
-import { useActivities } from "./features/activities/ActivitiesContext";
 import Timer from "./features/timer/Timer";
 import AuthButton from "./features/auth";
-import Activities from "./features/activities/Activites";
+import Activities, { useActivities } from "./features/activities";
 
 function App() {
   const {
