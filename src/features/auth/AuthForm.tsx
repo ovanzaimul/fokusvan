@@ -41,7 +41,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     }
     if (formState == "signUp") {
       const data = await signUpNewUser(email, password, displayName);
-      console.log("data from form:", data);
       if (data) onSuccess();
     }
 

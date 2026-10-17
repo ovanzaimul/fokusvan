@@ -17,7 +17,7 @@ export function AuthContext({ children }: { children: React.ReactNode }) {
     });
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       supabase.auth.getClaims().then(({ data }) => {
         setClaims(data?.claims || null);
       });
