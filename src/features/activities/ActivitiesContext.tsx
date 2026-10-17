@@ -1,14 +1,21 @@
 import { supabase } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "../auth";
+import {
+  ACTIVITIES_KEY,
+  hasLocalActivities,
+  readLocalActivities,
+} from "@/lib/local-activities";
 
 export interface Activity {
   id: string;
+  createdAt: string;
   title: string;
   estimation: number;
   completed: number;
-  focusMinues: number;
+  focusMinutes: number;
   done: boolean;
+  completedAt: string | null;
 }
 
 interface ActivitiesContextType {
@@ -16,6 +23,12 @@ interface ActivitiesContextType {
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
+  addActivity: ({
+    title,
+    estimation,
+  }: Pick<Activity, "title" | "estimation">) => void;
+  setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  openMergeDialog: boolean;
 }
 
 const Context = createContext<ActivitiesContextType | null>(null);
@@ -30,23 +43,56 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
   const [activeActivityId, setActiveActivityId] = useState<string | null>(
     initActivityId,
   );
+  const [openMergeDialog, setOpenMergeDialog] = useState(false);
 
   const { claims } = useAuth();
   const userId = claims?.sub;
 
   async function getActivities() {
-    const { data, error } = await supabase.from("activities").select();
-    if (error) {
-      console.error(error);
+    try {
+      const { data, error } = await supabase.from("activities").select();
+      if (error) throw error;
+
+      setActivities(data);
+    } catch (err) {
+      console.error(err);
       return;
     }
+  }
 
-    setActivities(data);
+  function addActivity({
+    title,
+    estimation,
+  }: Pick<Activity, "title" | "estimation">) {
+    const newActivity = {
+      id: crypto.randomUUID(),
+      title,
+      createdAt: new Date().toISOString(),
+      estimation,
+      completed: 0,
+      focusMinutes: 0,
+      done: false,
+      completedAt: null,
+    } as Activity;
+    // local
+    const newActivities = [...activities, newActivity];
+    setActivities(newActivities);
+    localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActivities));
+    // db(if signed in)
   }
 
   useEffect(() => {
-    // Fix this later
-    getActivities();
+    // Fix this later(maybe)
+    if (!userId) {
+      const localActivities = readLocalActivities();
+      setActivities(localActivities);
+    } else {
+      if (hasLocalActivities()) {
+        setOpenMergeDialog(true);
+      } else {
+        getActivities();
+      }
+    }
   }, [userId]);
 
   function updateActiveActivityId(id: string) {
@@ -60,6 +106,9 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         activeActivityId,
         updateActiveActivityId,
         setActivities,
+        addActivity,
+        setOpenMergeDialog,
+        openMergeDialog,
       }}
     >
       {children}

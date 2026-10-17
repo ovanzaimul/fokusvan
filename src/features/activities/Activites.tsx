@@ -1,5 +1,4 @@
-import { Plus } from "lucide-react";
-
+import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -9,6 +8,9 @@ import {
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import type { Activity } from "./ActivitiesContext";
+import { ActivityDialog } from "./ActivityDialog";
+import { ActivityForm } from "./ActivityForm";
+import MergeActivitiesDialog from "./MergeActivitiesDialog";
 
 interface ActiviesProps {
   activities: Activity[];
@@ -21,13 +23,19 @@ export default function Activities({
   activeActivityId,
   updateActiveActivityId,
 }: ActiviesProps) {
+  const [openDialog, setOpenDialog] = useState(false);
+
   return (
     <Card className="w-lg py-4">
-      <CardHeader className="flex items-center">
+      <CardHeader className="flex items-center justify-between">
         <CardTitle>What are you focusing on?</CardTitle>
-        <Button variant="outline" size="icon">
-          <Plus />
-        </Button>
+        <ActivityDialog
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          title="Add Activity"
+        >
+          <ActivityForm onSuccess={() => setOpenDialog(false)} />
+        </ActivityDialog>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
         {activities.map((item) => {
@@ -47,6 +55,7 @@ export default function Activities({
           );
         })}
       </CardContent>
+      <MergeActivitiesDialog />
     </Card>
   );
 }

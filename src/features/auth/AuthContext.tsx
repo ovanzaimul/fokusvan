@@ -15,28 +15,14 @@ export function AuthContext({ children }: { children: React.ReactNode }) {
     supabase.auth.getClaims().then(({ data }) => {
       setClaims(data?.claims || null);
     });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       supabase.auth.getClaims().then(({ data }) => {
         setClaims(data?.claims || null);
       });
-
-      if (event === "INITIAL_SESSION") {
-        // handle initial session
-      } else if (event === "SIGNED_IN") {
-        // handle sign in event
-        console.log("user signIn");
-      } else if (event === "SIGNED_OUT") {
-        // handle sign out event
-        console.log("user signOut");
-      } else if (event === "PASSWORD_RECOVERY") {
-        // handle password recovery event
-      } else if (event === "TOKEN_REFRESHED") {
-        // handle token refreshed event
-      } else if (event === "USER_UPDATED") {
-        // handle user updated event
+      if (event === "SIGNED_IN") {
+        // Check your email to confirm your account(if no session)
       }
     });
 
