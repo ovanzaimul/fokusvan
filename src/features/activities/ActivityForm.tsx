@@ -3,20 +3,25 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActivities } from "./ActivitiesContext";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ActivityFormProps {
   onSuccess: () => void;
 }
 
 export function ActivityForm({ onSuccess }: ActivityFormProps) {
-  const { addActivity } = useActivities();
+  const [loading, setLoading] = useState(false);
+  const { addNewActivity } = useActivities();
 
-  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const title = formData.get("title") as string;
     const estimation = Number(formData.get("estimation"));
-    addActivity({ title, estimation });
+    setLoading(true);
+    await addNewActivity({ title, estimation });
+    setLoading(false);
     onSuccess();
   }
 
@@ -38,7 +43,7 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
         </Field>
 
         <Field orientation="horizontal">
-          <Button type="submit">Add</Button>
+          <Button type="submit">{loading ? <Spinner /> : "Add"}</Button>
           <Button type="button" variant="outline">
             Cancel
           </Button>

@@ -6,6 +6,7 @@ import {
   hasLocalActivities,
   readLocalActivities,
 } from "@/lib/local-activities";
+import { addActivity } from "./activitiesApi";
 
 export interface Activity {
   id: string;
@@ -23,10 +24,10 @@ interface ActivitiesContextType {
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
-  addActivity: ({
+  addNewActivity: ({
     title,
     estimation,
-  }: Pick<Activity, "title" | "estimation">) => void;
+  }: Pick<Activity, "title" | "estimation">) => Promise<void>;
   setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
   openMergeDialog: boolean;
 }
@@ -60,7 +61,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function addActivity({
+  async function addNewActivity({
     title,
     estimation,
   }: Pick<Activity, "title" | "estimation">) {
@@ -74,11 +75,17 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       done: false,
       completedAt: null,
     } as Activity;
-    // local
-    const newActivities = [...activities, newActivity];
-    setActivities(newActivities);
-    localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActivities));
-    // db(if signed in)
+    if (userId) {
+      // db(if signed in)
+      await addActivity(newActivity);
+      const newActivities = [...activities, newActivity];
+      setActivities(newActivities);
+    } else {
+      // local
+      const newActivities = [...activities, newActivity];
+      setActivities(newActivities);
+      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActivities));
+    }
   }
 
   useEffect(() => {
@@ -106,7 +113,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         activeActivityId,
         updateActiveActivityId,
         setActivities,
-        addActivity,
+        addNewActivity,
         setOpenMergeDialog,
         openMergeDialog,
       }}

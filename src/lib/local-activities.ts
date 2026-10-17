@@ -1,3 +1,4 @@
+import type { Activity } from "@/features/activities/ActivitiesContext";
 import { supabase } from "./supabase";
 
 export const ACTIVITIES_KEY = "fokusvan:activities";
@@ -15,8 +16,8 @@ export function readLocalActivities() {
 
 export const hasLocalActivities = () => readLocalActivities().length > 0;
 
-export async function mergeLocalActivities() {
-  const localActivities = readLocalActivities().map((activity) => ({
+export function toRow(activity: Activity) {
+  return {
     id: activity.id,
     title: activity.title,
     created_at: activity.createdAt,
@@ -25,7 +26,11 @@ export async function mergeLocalActivities() {
     focus_minutes: activity.focusMinutes,
     done: activity.done,
     completed_at: activity.completedAt,
-  }));
+  };
+}
+
+export async function mergeLocalActivities() {
+  const localActivities = readLocalActivities().map(toRow);
   try {
     const { error } = await supabase.from("activities").insert(localActivities);
 
