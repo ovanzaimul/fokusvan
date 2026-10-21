@@ -42,3 +42,25 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) console.error(error);
 }
+
+export async function resetPassword(email: string) {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "http://localhost:5173/reset-password",
+    });
+
+    if (error) throw error;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export async function updateUser(newPassword: string) {
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) throw error;
+  } catch (err) {
+    console.error(err);
+  }
+}

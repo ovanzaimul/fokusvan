@@ -9,6 +9,7 @@ import App from "./App.tsx";
 import { Toaster } from "./components/ui/toast.tsx";
 import { AuthContext } from "./features/auth";
 import { ActivityContext } from "./features/activities/ActivitiesContext.tsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
         <ActivityContext>
           <Routes>
             <Route path="/" element={<App />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Routes>
           <Toaster />
         </ActivityContext>

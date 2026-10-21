@@ -1,11 +1,13 @@
 import { useState } from "react";
 
-import { signInWithEmail, signUpNewUser } from "./authApi";
+import { resetPassword, signInWithEmail, signUpNewUser } from "./authApi";
 
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -14,17 +16,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
+import { useCountDown } from "./useCountdown";
 
-type FormState = "signUp" | "signIn";
+type FormState = "signUp" | "signIn" | "reset";
 
 interface AuthFormProps {
   onSuccess: () => void;
 }
 
+const FORMTEXT: Record<FormState, { button: string; title: string }> = {
+  signUp: { title: "Sign Up", button: "Create account" },
+  signIn: { title: "Sign In", button: "Sign In" },
+  reset: { title: "Reset Password", button: "Send reset link" },
+};
+
+const TIME_IN_SECOND = 60;
+
 export function AuthForm({ onSuccess }: AuthFormProps) {
   const [formState, setFormState] = useState<FormState>("signIn");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const { countDown, setStart } = useCountDown(TIME_IN_SECOND);
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,15 +58,68 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       const data = await signUpNewUser(email, password, displayName);
       if (data) onSuccess();
     }
+    if (formState == "reset") {
+      await resetPassword(email);
+      setEmail(email);
+      setResetSent(true);
+      setStart(true);
+    }
 
     setLoading(false);
   }
 
-  const buttonText = formState == "signIn" ? "Sign In" : "Create account";
-  return (
+  const confirmationMessage = (
+    <Card>
+      <CardHeader>
+        <CardTitle>Check your email</CardTitle>
+        <CardDescription>
+          If an account exists for {email}, we've sent a link to reset your
+          password
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Didn't get it? Check your spam folder.</p>
+        <p>The link expires in 1 hour</p>
+      </CardContent>
+      <CardFooter>
+        <CardAction>
+          <Button
+            variant="link"
+            onClick={() => {
+              setFormState("signIn");
+              setResetSent(false);
+            }}
+          >
+            Back to sign in
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              setLoading(true);
+              await resetPassword(email);
+              setLoading(false);
+            }}
+            disabled={countDown > 0}
+          >
+            {countDown > 0 ? (
+              `Resend in ${countDown}s`
+            ) : loading ? (
+              <Spinner />
+            ) : (
+              "Resend Email"
+            )}
+          </Button>
+        </CardAction>
+      </CardFooter>
+    </Card>
+  );
+
+  return resetSent ? (
+    confirmationMessage
+  ) : (
     <Card>
       <CardHeader className="flex items-center justify-between">
-        <CardTitle>{formState == "signIn" ? "Sign In" : "Sign Up"}</CardTitle>
+        <CardTitle>{FORMTEXT[formState].title}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
@@ -72,39 +140,55 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             </div>
           )}
 
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              id="password"
-              required
-            />
-            <div className="flex items-center">
-              <Checkbox
-                checked={showPassword}
-                onCheckedChange={setShowPassword}
-                id="show-password"
+          {(formState == "signUp" || formState == "signIn") && (
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                id="password"
+                required
               />
-              <Label htmlFor="show-password">Show Password</Label>
+              <div className="flex items-center">
+                <Checkbox
+                  checked={showPassword}
+                  onCheckedChange={setShowPassword}
+                  id="show-password"
+                />
+                <Label htmlFor="show-password">Show Password</Label>
+              </div>
             </div>
-          </div>
+          )}
+
+          {formState == "reset" && <div></div>}
           <Button disabled={loading} type="submit">
-            {loading ? <Spinner /> : buttonText}
+            {loading ? <Spinner /> : FORMTEXT[formState].button}
           </Button>
         </form>
       </CardContent>
-      <CardFooter>
-        <Button
-          variant="link"
-          onClick={() => {
-            setFormState((prev) => (prev == "signIn" ? "signUp" : "signIn"));
-          }}
-        >
-          {formState == "signIn"
-            ? "Don't have an account? Sign up"
-            : "Already have an account? Sign in"}
-        </Button>
+      <CardFooter className="flex flex-col">
+        {formState == "signIn" && (
+          <Button variant={"ghost"} onClick={() => setFormState("reset")}>
+            Forgot Password?
+          </Button>
+        )}
+        {formState == "reset" && (
+          <Button variant="ghost" onClick={() => setFormState("signIn")}>
+            Back to sign in
+          </Button>
+        )}
+        {(formState == "signUp" || formState == "signIn") && (
+          <Button
+            variant="link"
+            onClick={() => {
+              setFormState((prev) => (prev == "signIn" ? "signUp" : "signIn"));
+            }}
+          >
+            {formState == "signIn"
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Sign in"}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
