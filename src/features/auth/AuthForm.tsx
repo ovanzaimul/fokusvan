@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-import { resetPassword, signInWithEmail, signUpNewUser } from "./authApi";
+import {
+  resend,
+  resetPassword,
+  signInWithEmail,
+  signUpNewUser,
+} from "./authApi";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +41,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [formState, setFormState] = useState<FormState>("signIn");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
 
   const { countDown, setStart } = useCountDown(TIME_IN_SECOND);
@@ -56,12 +61,16 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     }
     if (formState == "signUp") {
       const data = await signUpNewUser(email, password, displayName);
-      if (data) onSuccess();
+      if (data) {
+        setEmail(email);
+        setEmailSent(true);
+        setStart(true);
+      }
     }
     if (formState == "reset") {
       await resetPassword(email);
       setEmail(email);
-      setResetSent(true);
+      setEmailSent(true);
       setStart(true);
     }
 
@@ -73,8 +82,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       <CardHeader>
         <CardTitle>Check your email</CardTitle>
         <CardDescription>
-          If an account exists for {email}, we've sent a link to reset your
-          password
+          {formState == "signUp"
+            ? `We sent a confirmation link to ${email}. Click it to activate your account`
+            : `If an account exists for ${email}, we've sent a link to reset your
+          password`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -87,7 +98,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             variant="link"
             onClick={() => {
               setFormState("signIn");
-              setResetSent(false);
+              setEmailSent(false);
             }}
           >
             Back to sign in
@@ -96,7 +107,11 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             variant="outline"
             onClick={async () => {
               setLoading(true);
-              await resetPassword(email);
+              if (formState == "signUp") {
+                await resend(email);
+              } else {
+                await resetPassword(email);
+              }
               setLoading(false);
             }}
             disabled={countDown > 0}
@@ -114,7 +129,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     </Card>
   );
 
-  return resetSent ? (
+  return emailSent ? (
     confirmationMessage
   ) : (
     <Card>

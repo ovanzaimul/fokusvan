@@ -64,3 +64,18 @@ export async function updateUser(newPassword: string) {
     console.error(err);
   }
 }
+
+export async function resend(email: string) {
+  try {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email,
+      options: {
+        emailRedirectTo: "http://localhost:5173",
+      },
+    });
+    if (error) throw error;
+  } catch (err) {
+    console.error(err);
+  }
+}
