@@ -43,8 +43,15 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
   const { countDown, setStart } = useCountDown(TIME_IN_SECOND);
+
+  function switchFormState(state: FormState) {
+    setFormState(state);
+    setError("");
+    setShowPassword(false);
+  }
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -54,27 +61,35 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const displayName = formData.get("displayName") as string;
-
-    if (formState == "signIn") {
-      const data = await signInWithEmail(email, password);
-      if (data) onSuccess();
-    }
-    if (formState == "signUp") {
-      const data = await signUpNewUser(email, password, displayName);
-      if (data) {
+    try {
+      if (formState == "signIn") {
+        const data = await signInWithEmail(email, password);
+        if (data) onSuccess();
+      }
+      if (formState == "signUp") {
+        const data = await signUpNewUser(email, password, displayName);
+        console.log("signup: ", data);
+        if (data) {
+          setEmail(email);
+          setEmailSent(true);
+          setStart(true);
+        }
+      }
+      if (formState == "reset") {
+        await resetPassword(email);
         setEmail(email);
         setEmailSent(true);
         setStart(true);
       }
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-    if (formState == "reset") {
-      await resetPassword(email);
-      setEmail(email);
-      setEmailSent(true);
-      setStart(true);
-    }
-
-    setLoading(false);
   }
 
   const confirmationMessage = (
@@ -97,7 +112,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <Button
             variant="link"
             onClick={() => {
-              setFormState("signIn");
+              switchFormState("signIn");
               setEmailSent(false);
             }}
           >
@@ -179,16 +194,17 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <Button disabled={loading} type="submit">
             {loading ? <Spinner /> : FORMTEXT[formState].button}
           </Button>
+          <p className="text-red-300">{error}</p>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col">
         {formState == "signIn" && (
-          <Button variant={"ghost"} onClick={() => setFormState("reset")}>
+          <Button variant={"ghost"} onClick={() => switchFormState("reset")}>
             Forgot Password?
           </Button>
         )}
         {formState == "reset" && (
-          <Button variant="ghost" onClick={() => setFormState("signIn")}>
+          <Button variant="ghost" onClick={() => switchFormState("signIn")}>
             Back to sign in
           </Button>
         )}
@@ -196,7 +212,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <Button
             variant="link"
             onClick={() => {
-              setFormState((prev) => (prev == "signIn" ? "signUp" : "signIn"));
+              switchFormState(formState == "signIn" ? "signUp" : "signIn");
             }}
           >
             {formState == "signIn"

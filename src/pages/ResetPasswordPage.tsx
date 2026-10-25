@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 
 export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
@@ -22,14 +23,24 @@ export default function ResetPasswordPage() {
 
     const formData = new FormData(e.target);
     const newPassword = formData.get("new-password") as string;
-    setLoading(true);
-    await updateUser(newPassword);
-    setLoading(false);
-    toast.add({
-      type: "success",
-      description: "Password updated",
-    });
-    navigate("/");
+    try {
+      setLoading(true);
+      await updateUser(newPassword);
+      setLoading(false);
+      toast.add({
+        type: "success",
+        description: "Password updated",
+      });
+      navigate("/");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -75,6 +86,7 @@ export default function ResetPasswordPage() {
               </Button>
             </Field>
           </form>
+          <p className="text-red-300">{error}</p>
         </CardContent>
       </Card>
     </div>

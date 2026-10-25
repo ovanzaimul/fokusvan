@@ -1,3 +1,4 @@
+import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 
 export async function signUpNewUser(
@@ -17,10 +18,9 @@ export async function signUpNewUser(
   });
   if (error) {
     console.error(error);
-    return;
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  console.log(data);
-  console.log(data.session);
   return data;
 }
 
@@ -32,50 +32,56 @@ export async function signInWithEmail(email: string, password: string) {
 
   if (error) {
     console.error(error);
-    return;
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  console.log(data);
   return data;
 }
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut({ scope: "local" });
-  if (error) console.error(error);
+
+  if (error) {
+    console.error(error);
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
+  }
 }
 
 export async function resetPassword(email: string) {
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "http://localhost:5173/reset-password",
-    });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: "http://localhost:5173/reset-password",
+  });
 
-    if (error) throw error;
-  } catch (err) {
-    console.error(err);
+  if (error) {
+    console.error(error);
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
 }
 
 export async function updateUser(newPassword: string) {
-  try {
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-    if (error) throw error;
-  } catch (err) {
-    console.error(err);
+  if (error) {
+    console.error(error);
+
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
 }
 
 export async function resend(email: string) {
-  try {
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email,
-      options: {
-        emailRedirectTo: "http://localhost:5173",
-      },
-    });
-    if (error) throw error;
-  } catch (err) {
-    console.error(err);
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: email,
+    options: {
+      emailRedirectTo: "http://localhost:5173",
+    },
+  });
+  if (error) {
+    console.error(error);
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
 }

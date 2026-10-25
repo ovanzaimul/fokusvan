@@ -12,8 +12,17 @@ export default function AuthButton() {
 
   const { claims } = useAuth();
   const username = claims?.user_metadata?.display_name;
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   return (
-    <div>
+    <div className="flex flex-col justify-center items-center">
       {!claims && (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogTrigger
@@ -32,7 +41,7 @@ export default function AuthButton() {
         <div className="flex justify-between items-center">
           <h2 className="text-emerald-100">Welcome, {username}</h2>
 
-          <Button variant={"link"} onClick={signOut}>
+          <Button variant={"link"} onClick={handleSignOut}>
             Sign Out
           </Button>
         </div>
