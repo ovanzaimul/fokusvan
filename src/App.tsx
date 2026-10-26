@@ -4,7 +4,12 @@ import AuthButton from "./features/auth";
 import Activities, { useActivities } from "./features/activities";
 
 function App() {
-  const { activeActivityId, setActivities } = useActivities();
+  const {
+    activities,
+    updateActiveActivityId,
+    activeActivityId,
+    setActivities,
+  } = useActivities();
 
   const completeFocus = useCallback(() => {
     setActivities((prev) => {
@@ -23,7 +28,12 @@ function App() {
         activeActivityId={activeActivityId}
         onCompleteFocus={completeFocus}
       />
-      <Activities />
+
+      <Activities
+        activities={activities}
+        activeActivityId={activeActivityId}
+        updateActiveActivityId={updateActiveActivityId}
+      />
     </div>
   );
 }
