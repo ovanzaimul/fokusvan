@@ -15,14 +15,24 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function MergeActivitiesDialog() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { openMergeDialog, setOpenMergeDialog } = useActivities();
   const localActivities = readLocalActivities();
 
   async function handleMerge() {
-    setLoading(true);
-    await mergeLocalActivities();
-    setOpenMergeDialog(false);
-    setLoading(false);
+    try {
+      setLoading(true);
+      await mergeLocalActivities();
+      setOpenMergeDialog(false);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -38,6 +48,7 @@ export default function MergeActivitiesDialog() {
           <Button type="button" onClick={handleMerge}>
             {loading ? <Spinner /> : "Merge"}
           </Button>
+          <p className="text-red-300">{error}</p>
         </div>
       </DialogContent>
     </Dialog>

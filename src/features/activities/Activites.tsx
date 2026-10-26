@@ -3,27 +3,27 @@ import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import type { Activity } from "./ActivitiesContext";
+import { useActivities } from "./ActivitiesContext";
 import { ActivityDialog } from "./ActivityDialog";
 import { ActivityForm } from "./ActivityForm";
 import MergeActivitiesDialog from "./MergeActivitiesDialog";
+import { Spinner } from "@/components/ui/spinner";
 
-interface ActiviesProps {
-  activities: Activity[];
-  activeActivityId: string | null;
-  updateActiveActivityId: (id: string) => void;
-}
-
-export default function Activities({
-  activities,
-  activeActivityId,
-  updateActiveActivityId,
-}: ActiviesProps) {
+export default function Activities() {
   const [openDialog, setOpenDialog] = useState(false);
+
+  const {
+    activities,
+    updateActiveActivityId,
+    activeActivityId,
+    loading,
+    error,
+  } = useActivities();
 
   return (
     <Card className="w-lg py-4">
@@ -37,7 +37,17 @@ export default function Activities({
           <ActivityForm onSuccess={() => setOpenDialog(false)} />
         </ActivityDialog>
       </CardHeader>
-      <CardContent className="flex flex-col gap-1">
+      <CardContent className="flex flex-col  gap-1">
+        <CardDescription>Activities:</CardDescription>
+        {error && <p className="text-red-300">{error}</p>}
+        {loading && (
+          <p className="flex justify-center items-center">
+            <Spinner className="size-8" />
+          </p>
+        )}
+        {!loading && !error && activities.length === 0 && (
+          <p>No acitivities yet.</p>
+        )}
         {activities.map((item) => {
           return (
             <Button

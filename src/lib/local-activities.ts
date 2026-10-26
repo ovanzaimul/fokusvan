@@ -1,5 +1,6 @@
 import type { Activity } from "@/features/activities/ActivitiesContext";
 import { supabase } from "./supabase";
+import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "./errors";
 
 export const ACTIVITIES_KEY = "fokusvan:activities";
 
@@ -31,13 +32,11 @@ export function toRow(activity: Activity) {
 
 export async function mergeLocalActivities() {
   const localActivities = readLocalActivities().map(toRow);
-  try {
-    const { error } = await supabase.from("activities").insert(localActivities);
+  const { error } = await supabase.from("activitiess").insert(localActivities);
 
-    if (error) throw error;
-
-    localStorage.removeItem(ACTIVITIES_KEY);
-  } catch (err) {
-    console.error(err);
+  if (error) {
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
+  localStorage.removeItem(ACTIVITIES_KEY);
 }

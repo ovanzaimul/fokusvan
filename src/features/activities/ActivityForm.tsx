@@ -12,17 +12,28 @@ interface ActivityFormProps {
 
 export function ActivityForm({ onSuccess }: ActivityFormProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { addNewActivity } = useActivities();
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const title = formData.get("title") as string;
-    const estimation = Number(formData.get("estimation"));
-    setLoading(true);
-    await addNewActivity({ title, estimation });
-    setLoading(false);
-    onSuccess();
+    try {
+      const formData = new FormData(e.target);
+      const title = formData.get("title") as string;
+      const estimation = Number(formData.get("estimation"));
+
+      setLoading(true);
+      await addNewActivity({ title, estimation });
+      onSuccess();
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -38,7 +49,8 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
             id="estimation"
             name="estimation"
             type="number"
-            defaultValue={0}
+            min={1}
+            defaultValue={1}
           />
         </Field>
 
@@ -48,6 +60,7 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
             Cancel
           </Button>
         </Field>
+        <p className="text-red-300">{error}</p>
       </FieldGroup>
     </form>
   );

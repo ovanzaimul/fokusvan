@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "../auth";
 import {
@@ -6,7 +5,7 @@ import {
   hasLocalActivities,
   readLocalActivities,
 } from "@/lib/local-activities";
-import { addActivity } from "./activitiesApi";
+import { addActivity, fetchActivities } from "./activitiesApi";
 
 export interface Activity {
   id: string;
@@ -30,6 +29,8 @@ interface ActivitiesContextType {
   }: Pick<Activity, "title" | "estimation">) => Promise<void>;
   setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
   openMergeDialog: boolean;
+  loading: boolean;
+  error: string;
 }
 
 const Context = createContext<ActivitiesContextType | null>(null);
@@ -45,19 +46,26 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     initActivityId,
   );
   const [openMergeDialog, setOpenMergeDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const { claims } = useAuth();
   const userId = claims?.sub;
 
   async function getActivities() {
     try {
-      const { data, error } = await supabase.from("activities").select();
-      if (error) throw error;
-
+      setLoading(true);
+      const data = await fetchActivities();
       setActivities(data);
     } catch (err) {
       console.error(err);
-      return;
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -116,6 +124,8 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         addNewActivity,
         setOpenMergeDialog,
         openMergeDialog,
+        error,
+        loading,
       }}
     >
       {children}
