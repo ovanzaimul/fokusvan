@@ -32,7 +32,7 @@ export function toRow(activity: Activity) {
 
 export async function mergeLocalActivities() {
   const localActivities = readLocalActivities().map(toRow);
-  const { error } = await supabase.from("activitiess").insert(localActivities);
+  const { error } = await supabase.from("activities").insert(localActivities);
 
   if (error) {
     const key = error.code ?? error.name;
