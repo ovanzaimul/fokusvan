@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 import {
   resend,
@@ -22,11 +24,40 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
 import { useCountDown } from "./useCountdown";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormState = "signUp" | "signIn" | "reset";
 
 interface AuthFormProps {
   onSuccess: () => void;
+}
+
+// interface FormData {
+//   email: string;
+//   password: string;
+//   displayName: string;
+// }
+type FormValues = z.infer<ReturnType<typeof createSchema>>;
+
+function createSchema(formState: FormState) {
+  return z.object({
+    email: z.email("Please enter a valid email address"),
+    password:
+      formState !== "reset"
+        ? z
+            .string()
+            .min(1, "Password is required")
+            .min(6, "Password must be at least 6 characters")
+        : z.string().optional(),
+    displayName:
+      formState == "signUp"
+        ? z
+            .string()
+            .nonempty("Display name is required")
+            .min(2, "Display name must be at least two characters")
+            .max(10, "Display name must be 15 characters or less")
+        : z.string().optional(),
+  });
 }
 
 const FORMTEXT: Record<FormState, { button: string; title: string }> = {
@@ -47,28 +78,33 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
   const { countDown, setStart } = useCountDown(TIME_IN_SECOND);
 
+  const schema = createSchema(formState);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
+
   function switchFormState(state: FormState) {
     setFormState(state);
     setError("");
     setShowPassword(false);
   }
 
-  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    e.preventDefault();
-
+  async function onSubmit(data: FormValues) {
     setLoading(true);
-    const formData = new FormData(e.target);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const displayName = formData.get("displayName") as string;
+    const { displayName, email, password } = data;
+
     try {
       if (formState == "signIn") {
-        const data = await signInWithEmail(email, password);
+        const data = await signInWithEmail(email, password!);
         if (data) onSuccess();
       }
       if (formState == "signUp") {
-        const data = await signUpNewUser(email, password, displayName);
-        console.log("signup: ", data);
+        const data = await signUpNewUser(email, password!, displayName!);
         if (data) {
           setEmail(email);
           setEmailSent(true);
@@ -152,21 +188,32 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         <CardTitle>{FORMTEXT[formState].title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
               type="email"
-              name="email"
               id="email"
+              {...register("email")}
               autoComplete="email"
               required
             />
+            {errors.email && (
+              <p className="text-red-300">{errors.email.message}</p>
+            )}
           </div>
           {formState == "signUp" && (
             <div>
               <Label htmlFor="displayName">Display Name</Label>
-              <Input type="text" name="displayName" id="displayName" required />
+              <Input
+                type="text"
+                id="displayName"
+                {...register("displayName")}
+                required
+              />
+              {errors.displayName && (
+                <p className="text-red-300">{errors.displayName.message}</p>
+              )}
             </div>
           )}
 
@@ -175,10 +222,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               <Label htmlFor="password">Password</Label>
               <Input
                 type={showPassword ? "text" : "password"}
-                name="password"
                 id="password"
+                {...register("password")}
                 required
               />
+              {errors.password && (
+                <p className="text-red-300">{errors.password.message}</p>
+              )}
               <div className="flex items-center">
                 <Checkbox
                   checked={showPassword}
