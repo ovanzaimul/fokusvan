@@ -70,7 +70,7 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
           <Input
             id="estimation"
             type="number"
-            {...register("estimation")}
+            {...register("estimation", { valueAsNumber: true })}
             min={1}
           />
           {errors.estimation && (
