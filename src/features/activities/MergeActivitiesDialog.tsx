@@ -23,6 +23,7 @@ export default function MergeActivitiesDialog() {
     try {
       setLoading(true);
       await mergeLocalActivities();
+      location.replace(location.href);
       setOpenMergeDialog(false);
     } catch (err) {
       const message =
