@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,23 +6,22 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
 import { useActivities } from "./ActivitiesContext";
 import { ActivityDialog } from "./ActivityDialog";
 import { ActivityForm } from "./ActivityForm";
 import MergeActivitiesDialog from "./MergeActivitiesDialog";
 import { Spinner } from "@/components/ui/spinner";
+import Activity from "./Activity";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function Activities() {
   const [openDialog, setOpenDialog] = useState(false);
 
-  const {
-    activities,
-    updateActiveActivityId,
-    activeActivityId,
-    loading,
-    error,
-  } = useActivities();
+  const { activities, loading, error } = useActivities();
+  const sortedActivities = activities.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return (
     <Card className="w-lg py-4">
@@ -33,8 +31,13 @@ export default function Activities() {
           open={openDialog}
           onOpenChange={setOpenDialog}
           title="Add Activity"
+          trigger={
+            <Button variant="outline" size="icon">
+              <Plus />
+            </Button>
+          }
         >
-          <ActivityForm onSuccess={() => setOpenDialog(false)} />
+          <ActivityForm type="add" onSuccess={() => setOpenDialog(false)} />
         </ActivityDialog>
       </CardHeader>
       <CardContent className="flex flex-col  gap-1">
@@ -46,24 +49,11 @@ export default function Activities() {
           </p>
         )}
         {!loading && !error && activities.length === 0 && (
-          <p>No acitivities yet.</p>
+          <p>No activities yet.</p>
         )}
-        {activities.map((item) => {
-          return (
-            <Button
-              variant="ghost"
-              key={item.id}
-              className="flex justify-between"
-              onClick={() => updateActiveActivityId(item.id)}
-            >
-              <p>{item.title}</p>
-              {activeActivityId === item.id && <span>Active</span>}
-              <Badge>
-                {item.completed}/{item.estimation}
-              </Badge>
-            </Button>
-          );
-        })}
+        {sortedActivities.map((item) => (
+          <Activity key={item.id} item={item} />
+        ))}
       </CardContent>
       <MergeActivitiesDialog />
     </Card>

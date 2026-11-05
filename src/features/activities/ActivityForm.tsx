@@ -7,12 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useActivities } from "./ActivitiesContext";
+import { useActivities, type Activity } from "./ActivitiesContext";
 import { Spinner } from "@/components/ui/spinner";
 
-interface ActivityFormProps {
+interface BaseProps {
   onSuccess: () => void;
 }
+type ActivityFormProps =
+  | (BaseProps & {
+      type: "add";
+      activity?: never;
+    })
+  | (BaseProps & { type: "edit"; activity: Activity });
 
 interface FormData {
   title: string;
@@ -24,10 +30,10 @@ const schema = z.object({
   estimation: z.number().positive("Estimation must be at least 1"),
 });
 
-export function ActivityForm({ onSuccess }: ActivityFormProps) {
+export function ActivityForm({ type, onSuccess, activity }: ActivityFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { addNewActivity } = useActivities();
+  const { addActivity, saveActivity } = useActivities();
 
   const {
     register,
@@ -35,14 +41,19 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { estimation: 1, title: "" },
+    defaultValues: activity
+      ? { estimation: activity.estimation, title: activity.title }
+      : { estimation: 1 },
   });
 
   async function onSubmit(data: FormData) {
     try {
       const { title, estimation } = data;
       setLoading(true);
-      await addNewActivity({ title, estimation });
+      if (type === "add") await addActivity({ title, estimation });
+      if (type === "edit") {
+        await saveActivity(activity.id, { title, estimation });
+      }
       onSuccess();
     } catch (err) {
       const message =
@@ -79,7 +90,9 @@ export function ActivityForm({ onSuccess }: ActivityFormProps) {
         </Field>
 
         <Field orientation="horizontal">
-          <Button type="submit">{loading ? <Spinner /> : "Add"}</Button>
+          <Button type="submit">
+            {loading ? <Spinner /> : type === "add" ? "Add" : "Update"}
+          </Button>
           <Button type="button" variant="outline">
             Cancel
           </Button>

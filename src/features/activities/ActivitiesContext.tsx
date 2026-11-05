@@ -5,7 +5,12 @@ import {
   hasLocalActivities,
   readLocalActivities,
 } from "@/lib/local-activities";
-import { addActivity, fetchActivities } from "./activitiesApi";
+import {
+  createActivity,
+  deleteActivity,
+  fetchActivities,
+  updateActivity,
+} from "./activitiesApi";
 
 export interface Activity {
   id: string;
@@ -23,10 +28,15 @@ interface ActivitiesContextType {
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
-  addNewActivity: ({
+  addActivity: ({
     title,
     estimation,
   }: Pick<Activity, "title" | "estimation">) => Promise<void>;
+  saveActivity: (
+    id: string,
+    { title, estimation }: Partial<Activity>,
+  ) => Promise<void>;
+  removeActivity: (id: string) => Promise<void>;
   setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
   openMergeDialog: boolean;
   loading: boolean;
@@ -69,7 +79,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function addNewActivity({
+  async function addActivity({
     title,
     estimation,
   }: Pick<Activity, "title" | "estimation">) {
@@ -85,7 +95,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     } as Activity;
     if (userId) {
       // db(if signed in)
-      await addActivity(newActivity);
+      await createActivity(newActivity);
       const newActivities = [...activities, newActivity];
       setActivities(newActivities);
     } else {
@@ -93,6 +103,37 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       const newActivities = [...activities, newActivity];
       setActivities(newActivities);
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActivities));
+    }
+  }
+
+  async function saveActivity(
+    id: string,
+    { title, estimation }: Partial<Activity>,
+  ) {
+    if (userId) {
+      await updateActivity(id, { title, estimation });
+      const updated = activities.map((activity) =>
+        activity.id === id ? { ...activity, title, estimation } : activity,
+      ) as Activity[];
+      setActivities(updated);
+    } else {
+      const updated = activities.map((activity) =>
+        activity.id === id ? { ...activity, title, estimation } : activity,
+      ) as Activity[];
+      setActivities(updated);
+      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
+    }
+  }
+
+  async function removeActivity(id: string) {
+    if (userId) {
+      await deleteActivity(id);
+      const updated = activities.filter((activity) => activity.id !== id);
+      setActivities(updated);
+    } else {
+      const updated = activities.filter((activity) => activity.id !== id);
+      setActivities(updated);
+      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
     }
   }
 
@@ -121,7 +162,9 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         activeActivityId,
         updateActiveActivityId,
         setActivities,
-        addNewActivity,
+        addActivity,
+        saveActivity,
+        removeActivity,
         setOpenMergeDialog,
         openMergeDialog,
         error,
