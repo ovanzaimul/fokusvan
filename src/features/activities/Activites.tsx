@@ -23,6 +23,21 @@ export default function Activities() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
+  function renderContent() {
+    if (error) return <p className="text-red-300">{error}</p>;
+    if (loading)
+      return (
+        <p className="flex justify-center items-center">
+          <Spinner className="size-8" />
+        </p>
+      );
+    if (activities.length === 0) return <p>No activities yet.</p>;
+
+    return sortedActivities.map((item) => (
+      <Activity key={item.id} item={item} />
+    ));
+  }
+
   return (
     <Card className="w-lg py-4">
       <CardHeader className="flex items-center justify-between">
@@ -42,18 +57,7 @@ export default function Activities() {
       </CardHeader>
       <CardContent className="flex flex-col  gap-1">
         <CardDescription>Activities:</CardDescription>
-        {error && <p className="text-red-300">{error}</p>}
-        {loading && (
-          <p className="flex justify-center items-center">
-            <Spinner className="size-8" />
-          </p>
-        )}
-        {!loading && !error && activities.length === 0 && (
-          <p>No activities yet.</p>
-        )}
-        {sortedActivities.map((item) => (
-          <Activity key={item.id} item={item} />
-        ))}
+        {renderContent()}
       </CardContent>
       <MergeActivitiesDialog />
     </Card>
