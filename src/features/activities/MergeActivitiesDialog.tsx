@@ -41,7 +41,9 @@ export default function MergeActivitiesDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Add your {localActivities.length} local activities to your account?
+            Add your {localActivities.length} local{" "}
+            {localActivities.length > 1 ? "activities" : "activity"} to your
+            account?
           </DialogTitle>
         </DialogHeader>
 
