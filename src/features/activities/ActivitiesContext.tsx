@@ -137,6 +137,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       setActivities(updated);
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
     }
+    if (id === activeActivityId) localStorage.removeItem("activityId");
   }
 
   useEffect(() => {
