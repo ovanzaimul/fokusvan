@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -37,22 +38,44 @@ export default function MergeActivitiesDialog() {
   }
 
   return (
-    <Dialog open={openMergeDialog} onOpenChange={setOpenMergeDialog}>
-      <DialogContent>
+    <Dialog
+      open={openMergeDialog}
+      onOpenChange={setOpenMergeDialog}
+      disablePointerDismissal={true}
+    >
+      <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>
-            Add your {localActivities.length} local{" "}
-            {localActivities.length > 1 ? "activities" : "activity"} to your
-            account?
+            {`Save ${localActivities.length} local 
+            ${localActivities.length > 1 ? "activities" : "activity"} to your
+            account?`}
           </DialogTitle>
+          <DialogDescription className="flex flex-col gap-2">
+            <p>
+              <b>Add to my account:</b> Saved to your account
+            </p>
+            <p>
+              <b> Don't add:</b> Stays on this device only. Hidden while you're
+              signed in, and shown again if you sign out.
+            </p>
+          </DialogDescription>
         </DialogHeader>
 
-        <div>
+        <div className="flex gap-2">
           <Button type="button" onClick={handleMerge}>
-            {loading ? <Spinner /> : "Merge"}
+            {loading ? <Spinner /> : "Add to my account"}
           </Button>
-          <p className="text-red-300">{error}</p>
+          <Button
+            variant={"outline"}
+            onClick={() => {
+              setOpenMergeDialog(false);
+              localStorage.setItem("askToMerge", JSON.stringify(false));
+            }}
+          >
+            Don't add
+          </Button>
         </div>
+        <p className="text-red-300">{error}</p>
       </DialogContent>
     </Dialog>
   );

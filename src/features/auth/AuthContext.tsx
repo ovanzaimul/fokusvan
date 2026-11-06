@@ -24,6 +24,9 @@ export function AuthContext({ children }: { children: React.ReactNode }) {
       if (event === "SIGNED_IN") {
         // Check your email to confirm your account(if no session)
       }
+      if (event === "SIGNED_OUT") {
+        localStorage.setItem("askToMerge", JSON.stringify(true));
+      }
     });
 
     return () => subscription.unsubscribe();

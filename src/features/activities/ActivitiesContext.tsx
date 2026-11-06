@@ -49,6 +49,7 @@ function initActivityId() {
   const activityId = localStorage.getItem("activityId");
   return activityId;
 }
+const askToMerge = JSON.parse(localStorage.getItem("askToMerge") || "false");
 
 export function ActivityContext({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -103,6 +104,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       const newActivities = [...activities, newActivity];
       setActivities(newActivities);
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActivities));
+      localStorage.setItem("askToMerge", JSON.stringify(true));
     }
   }
 
@@ -143,7 +145,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       const localActivities = readLocalActivities();
       setActivities(localActivities);
     } else {
-      if (hasLocalActivities()) {
+      if (hasLocalActivities() && askToMerge) {
         setOpenMergeDialog(true);
       } else {
         getActivities();
