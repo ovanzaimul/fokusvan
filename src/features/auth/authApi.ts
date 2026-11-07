@@ -1,5 +1,6 @@
 import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
+import { urls } from "@/lib/urls";
 
 export async function signUpNewUser(
   email: string,
@@ -50,7 +51,7 @@ export async function signOut() {
 
 export async function resetPassword(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: "http://localhost:5173/reset-password",
+    redirectTo: urls.resetPassword,
   });
 
   if (error) {
@@ -76,7 +77,7 @@ export async function resend(email: string) {
     type: "signup",
     email: email,
     options: {
-      emailRedirectTo: "http://localhost:5173",
+      emailRedirectTo: urls.home,
     },
   });
   if (error) {
