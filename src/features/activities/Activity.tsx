@@ -113,6 +113,7 @@ export default function Activity({ item }: ActivityProps) {
         <ActivityForm
           type="edit"
           onSuccess={() => setOpenDialog(false)}
+          onCancel={() => setOpenDialog(false)}
           activity={item}
         />
       </ActivityDialog>

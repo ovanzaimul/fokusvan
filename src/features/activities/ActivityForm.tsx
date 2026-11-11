@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 interface BaseProps {
   onSuccess: () => void;
+  onCancel: () => void;
 }
 type ActivityFormProps =
   | (BaseProps & {
@@ -30,7 +31,12 @@ const schema = z.object({
   estimation: z.number().positive("Estimation must be at least 1"),
 });
 
-export function ActivityForm({ type, onSuccess, activity }: ActivityFormProps) {
+export function ActivityForm({
+  type,
+  onSuccess,
+  onCancel,
+  activity,
+}: ActivityFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { addActivity, saveActivity } = useActivities();
@@ -93,7 +99,7 @@ export function ActivityForm({ type, onSuccess, activity }: ActivityFormProps) {
           <Button type="submit">
             {loading ? <Spinner /> : type === "add" ? "Add" : "Update"}
           </Button>
-          <Button type="button" variant="outline">
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
         </Field>

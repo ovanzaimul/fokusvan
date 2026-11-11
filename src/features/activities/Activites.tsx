@@ -52,7 +52,11 @@ export default function Activities() {
             </Button>
           }
         >
-          <ActivityForm type="add" onSuccess={() => setOpenDialog(false)} />
+          <ActivityForm
+            type="add"
+            onSuccess={() => setOpenDialog(false)}
+            onCancel={() => setOpenDialog(false)}
+          />
         </ActivityDialog>
       </CardHeader>
       <CardContent className="flex flex-col  gap-1">
