@@ -28,6 +28,7 @@ interface ActivitiesContextType {
   activeActivityId: string | null;
   updateActiveActivityId: (id: string) => void;
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
+  getActivities: () => Promise<void>;
   addActivity: ({
     title,
     estimation,
@@ -168,6 +169,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         activeActivityId,
         updateActiveActivityId,
         setActivities,
+        getActivities,
         addActivity,
         saveActivity,
         removeActivity,

@@ -17,7 +17,8 @@ import { Spinner } from "@/components/ui/spinner";
 export default function MergeActivitiesDialog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { openMergeDialog, setOpenMergeDialog } = useActivities();
+  const { openMergeDialog, setOpenMergeDialog, getActivities } =
+    useActivities();
   const localActivities = readLocalActivities();
 
   async function handleMerge() {
@@ -50,14 +51,11 @@ export default function MergeActivitiesDialog() {
             ${localActivities.length > 1 ? "activities" : "activity"} to your
             account?`}
           </DialogTitle>
-          <DialogDescription className="flex flex-col gap-2">
-            <p>
-              <b>Add to my account:</b> Saved to your account
-            </p>
-            <p>
-              <b> Don't add:</b> Stays on this device only. Hidden while you're
-              signed in, and shown again if you sign out.
-            </p>
+          <DialogDescription className="">
+            <b>Add to my account:</b> Saved to your account
+            <br />
+            <b> Don't add:</b> Stays on this device only. Hidden while you're
+            signed in, and shown again if you sign out.
           </DialogDescription>
         </DialogHeader>
 
@@ -68,8 +66,9 @@ export default function MergeActivitiesDialog() {
           <Button
             variant={"outline"}
             onClick={() => {
-              setOpenMergeDialog(false);
               localStorage.setItem("askToMerge", JSON.stringify(false));
+              setOpenMergeDialog(false);
+              getActivities();
             }}
           >
             Don't add
