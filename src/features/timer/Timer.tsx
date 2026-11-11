@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
+
 import useTimer from "./useTimer";
+import { useSettings } from "../settings";
 
 import { Button } from "../../components/ui/button";
-
 import {
   Card,
   CardContent,
@@ -10,19 +12,12 @@ import {
 } from "../../components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { toast } from "../../components/ui/toast";
-import { useState } from "react";
 
 interface TimerProps {
   activeActivityId: string | null;
   onCompleteFocus: () => void;
 }
 export type FocusState = "focus" | "rest" | "recovery";
-
-const DURATIONS: Record<FocusState, number> = {
-  focus: 30 * 60 * 1000,
-  rest: 5 * 60 * 1000,
-  recovery: 10 * 60 * 1000,
-};
 
 const tabLabels: Record<FocusState, string> = {
   focus: "Focus",
@@ -44,13 +39,23 @@ export default function Timer({
 }: TimerProps) {
   const [focusState, setFocusState] = useState<FocusState>(initFocusState);
 
-  const { time, start, pause, reset, timerState } = useTimer({
+  const { settings } = useSettings();
+  const DURATIONSMS: Record<FocusState, number> = useMemo(
+    () => ({
+      focus: settings.focusMinutes * 60 * 1000,
+      rest: settings.restMinutes * 60 * 1000,
+      recovery: settings.recoveryMinutes * 60 * 1000,
+    }),
+    [settings.focusMinutes, settings.restMinutes, settings.recoveryMinutes],
+  );
+  const { timeInMs, start, pause, reset, timerState } = useTimer({
     onComplete: onCompleteFocus,
     focusState,
+    startTime: DURATIONSMS[focusState],
   });
 
-  const minutes = Math.floor(time / 1000 / 60);
-  const seconds = Math.floor((time / 1000) % 60);
+  const minutes = Math.floor(timeInMs / 1000 / 60);
+  const seconds = Math.floor((timeInMs / 1000) % 60);
 
   function handleStart() {
     if (!activeActivityId) {
@@ -65,14 +70,20 @@ export default function Timer({
   }
 
   function handleReset() {
-    reset(DURATIONS[focusState]);
+    reset(DURATIONSMS[focusState]);
   }
 
   function handleTabSwitch(tabValue: FocusState) {
     setFocusState(tabValue);
     localStorage.setItem("focusState", tabValue);
-    reset(DURATIONS[tabValue]);
+    reset(DURATIONSMS[tabValue]);
   }
+
+  useEffect(() => {
+    if (timerState === "idle") {
+      reset(DURATIONSMS[focusState]);
+    }
+  }, [timerState, reset, focusState, DURATIONSMS]);
 
   return (
     <Card className="w-lg py-4">

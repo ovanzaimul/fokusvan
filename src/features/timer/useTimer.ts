@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FocusState } from "./Timer";
 
 type TimerState = "idle" | "running" | "paused" | "finished";
 
 const INTERVAL_DELAY_MS = 100;
 
-function initTime() {
+function initTime(time: number) {
   const lsTime = localStorage.getItem("time");
-  if (!lsTime) return 0;
+  if (!lsTime) return time;
   if (JSON.parse(lsTime) > 0) {
     return JSON.parse(lsTime);
   }
-  return 0; //60 s in ms
+  return 0;
 }
 
 function initTimeStamp() {
@@ -31,17 +31,22 @@ function initTimerState() {
 interface UseTimerOptions {
   onComplete: () => void;
   focusState: FocusState;
+  startTime: number;
 }
 
-export default function useTimer({ onComplete, focusState }: UseTimerOptions) {
-  const [time, setTime] = useState(initTime);
+export default function useTimer({
+  onComplete,
+  focusState,
+  startTime,
+}: UseTimerOptions) {
+  const [timeInMs, setTimeInMs] = useState(() => initTime(startTime));
   const [timeStamp, setTimeStamp] = useState(initTimeStamp);
   const [timerState, setTimerState] = useState<TimerState>(initTimerState);
 
   const intervalIdRef = useRef<number>(null);
 
   function updateTime(time: number) {
-    setTime(time);
+    setTimeInMs(time);
     localStorage.setItem("time", JSON.stringify(time));
   }
   function updateTimeStamp(stamp: number) {
@@ -53,22 +58,28 @@ export default function useTimer({ onComplete, focusState }: UseTimerOptions) {
     localStorage.setItem("timerState", state);
   }
 
+  const reset = useCallback((duration: number) => {
+    updateTime(duration);
+    updateTimerState("idle");
+    updateTimeStamp(0);
+  }, []);
+
   useEffect(() => {
     if (timerState == "running") {
       intervalIdRef.current = setInterval(() => {
-        if (time > 0) {
+        if (timeInMs > 0) {
           const now = Date.now();
           const interval = now - timeStamp;
           updateTimeStamp(now);
-          if (time < 100) {
+          if (timeInMs < 100) {
             updateTime(0);
           } else {
-            updateTime(time - interval);
+            updateTime(timeInMs - interval);
           }
         }
-        if (time <= 0) {
+        if (timeInMs <= 0) {
           clearInterval(intervalIdRef.current!);
-          setTime(0);
+          setTimeInMs(0);
           setTimerState("finished");
           if (focusState == "focus") {
             onComplete();
@@ -77,7 +88,7 @@ export default function useTimer({ onComplete, focusState }: UseTimerOptions) {
       }, INTERVAL_DELAY_MS);
     }
     return () => clearInterval(intervalIdRef.current!);
-  }, [time, timerState, timeStamp, onComplete, focusState]);
+  }, [timeInMs, timerState, timeStamp, onComplete, focusState]);
 
   function start() {
     const now = Date.now();
@@ -89,11 +100,5 @@ export default function useTimer({ onComplete, focusState }: UseTimerOptions) {
     updateTimerState("paused");
   }
 
-  function reset(duration: number) {
-    updateTime(duration);
-    updateTimerState("idle");
-    updateTimeStamp(0);
-  }
-
-  return { time, timerState, start, pause, reset };
+  return { timeInMs, timerState, start, pause, reset };
 }

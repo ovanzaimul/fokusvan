@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import Timer from "./features/timer/Timer";
-import AuthButton from "./features/auth";
 import Activities, { useActivities } from "./features/activities";
+import Headers from "./components/Headers";
 
 function App() {
   const { activeActivityId, setActivities } = useActivities();
@@ -18,7 +18,7 @@ function App() {
 
   return (
     <div className="dark min-h-screen flex items-center justify-center flex-col gap-5 bg-background p-4">
-      <AuthButton />
+      <Headers />
       <Timer
         activeActivityId={activeActivityId}
         onCompleteFocus={completeFocus}

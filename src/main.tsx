@@ -9,19 +9,22 @@ import App from "./App.tsx";
 import { Toaster } from "./components/ui/toast.tsx";
 import { AuthContext } from "./features/auth";
 import { ActivityContext } from "./features/activities/ActivitiesContext.tsx";
+import { SettingsContext } from "./features/settings/SettingsContext.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthContext>
-        <ActivityContext>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-          </Routes>
-          <Toaster />
-        </ActivityContext>
+        <SettingsContext>
+          <ActivityContext>
+            <Routes>
+              <Route path="/" element={<App />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+            </Routes>
+            <Toaster />
+          </ActivityContext>
+        </SettingsContext>
       </AuthContext>
     </BrowserRouter>
   </StrictMode>,
