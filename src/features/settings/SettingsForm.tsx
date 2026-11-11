@@ -110,7 +110,7 @@ export default function SettingsForm({ onSuccess, onCancel }: SettingsForm) {
             </div>
           </FieldGroup>
           <Field>
-            <FieldLabel>Sessions before a long break</FieldLabel>
+            <FieldLabel>Cycles before recovery</FieldLabel>
             <Input
               type="number"
               min={1}
