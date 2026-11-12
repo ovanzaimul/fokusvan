@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
+import * as changeKeys from "change-case/keys";
 import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "./errors";
-import { toSnake } from "./caseConvert";
 
 export const ACTIVITIES_KEY = "fokusvan:activities";
 
@@ -18,7 +18,9 @@ export function readLocalActivities() {
 export const hasLocalActivities = () => readLocalActivities().length > 0;
 
 export async function mergeLocalActivities() {
-  const localActivities = readLocalActivities().map(toSnake);
+  const localActivities = readLocalActivities().map((activity) =>
+    changeKeys.snakeCase(activity),
+  );
   const { error } = await supabase.from("activities").insert(localActivities);
 
   if (error) {

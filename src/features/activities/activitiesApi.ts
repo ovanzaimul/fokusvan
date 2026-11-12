@@ -1,7 +1,18 @@
 import { supabase } from "@/lib/supabase";
+import * as changeKeys from "change-case/keys";
 import type { Activity } from "./ActivitiesContext";
 import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "@/lib/errors";
-import { toCamel, toSnake } from "@/lib/caseConvert";
+
+export interface ActivityDB {
+  id: string;
+  created_at: string;
+  title: string;
+  estimation: number;
+  completed: number;
+  focus_minutes: number;
+  done: boolean;
+  completed_at: string | null;
+}
 
 export async function fetchActivities() {
   const { data, error } = await supabase.from("activities").select();
@@ -10,11 +21,11 @@ export async function fetchActivities() {
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return data.map(toCamel);
+  return data.map((d) => changeKeys.camelCase(d));
 }
 
 export async function createActivity(activity: Activity) {
-  const newActivity = toSnake(activity);
+  const newActivity = changeKeys.snakeCase(activity) as ActivityDB;
   const { error } = await supabase.from("activities").insert(newActivity);
   if (error) {
     console.error(error);
@@ -27,7 +38,7 @@ export async function updateActivity(
   id: string,
   activity: Partial<Omit<Activity, "id">>,
 ) {
-  const acitivity = toSnake(activity);
+  const acitivity = changeKeys.snakeCase(activity) as ActivityDB;
   const { error } = await supabase
     .from("activities")
     .update(acitivity)

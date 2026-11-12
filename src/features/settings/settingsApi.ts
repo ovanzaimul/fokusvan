@@ -1,6 +1,14 @@
 import { supabase } from "@/lib/supabase";
+import * as changeKeys from "change-case/keys";
 import type { Settings } from "./SettingsContext";
 import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "@/lib/errors";
+
+export interface SettingsDB {
+  focus_minutes: number;
+  rest_minutes: number;
+  recovery_minutes: number;
+  cycle_length: number;
+}
 
 export async function fetchSettings() {
   const { data, error } = await supabase
@@ -12,21 +20,11 @@ export async function fetchSettings() {
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return {
-    focusMinutes: data.focus_minutes,
-    restMinutes: data.rest_minutes,
-    recoveryMinutes: data.recovery_minutes,
-    cycleLength: data.cycle_length,
-  };
+  return changeKeys.camelCase(data);
 }
 
 export async function updateSettings(id: string, settings: Settings) {
-  const settingsSnake = {
-    focus_minutes: settings.focusMinutes,
-    rest_minutes: settings.restMinutes,
-    recovery_minutes: settings.recoveryMinutes,
-    cycle_length: settings.cycleLength,
-  };
+  const settingsSnake = changeKeys.snakeCase(settings) as SettingsDB;
   const { data, error } = await supabase
     .from("settings")
     .upsert({ ...settingsSnake, user_id: id }, { onConflict: "user_id" })
@@ -37,10 +35,5 @@ export async function updateSettings(id: string, settings: Settings) {
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return {
-    focusMinutes: data.focus_minutes,
-    restMinutes: data.rest_minutes,
-    recoveryMinutes: data.recovery_minutes,
-    cycleLength: data.cycle_length,
-  };
+  return changeKeys.camelCase(data);
 }
