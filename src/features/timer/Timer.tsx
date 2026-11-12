@@ -12,10 +12,10 @@ import {
 } from "../../components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { toast } from "../../components/ui/toast";
+import { useActivities } from "../activities";
 
 interface TimerProps {
   activeActivityId: string | null;
-  onCompleteFocus: () => void;
 }
 export type FocusState = "focus" | "rest" | "recovery";
 
@@ -33,10 +33,7 @@ function initFocusState(): FocusState {
   return "focus";
 }
 
-export default function Timer({
-  activeActivityId,
-  onCompleteFocus,
-}: TimerProps) {
+export default function Timer({ activeActivityId }: TimerProps) {
   const [focusState, setFocusState] = useState<FocusState>(initFocusState);
 
   const { settings } = useSettings();
@@ -48,14 +45,29 @@ export default function Timer({
     }),
     [settings.focusMinutes, settings.restMinutes, settings.recoveryMinutes],
   );
+
+  const { completeFocusActivity } = useActivities();
   const { timeInMs, start, pause, reset, timerState } = useTimer({
-    onComplete: onCompleteFocus,
+    onComplete: handleCompleteFocus,
     focusState,
     startTime: DURATIONSMS[focusState],
   });
 
   const minutes = Math.floor(timeInMs / 1000 / 60);
   const seconds = Math.floor((timeInMs / 1000) % 60);
+
+  async function handleCompleteFocus() {
+    try {
+      await completeFocusActivity(settings.focusMinutes);
+    } catch (err) {
+      console.error(err);
+      toast.add({
+        type: "error",
+        title: "Something went wrong. Couldn't save your focus session",
+        timeout: 10000,
+      });
+    }
+  }
 
   function handleStart() {
     if (!activeActivityId) {

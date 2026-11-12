@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import * as changeKeys from "change-case/keys";
-import type { Activity } from "./ActivitiesContext";
+import type { Activity, FocusSession } from "./ActivitiesContext";
 import { DEFAULT_MESSAGE, DISPLAY_MESSAGES } from "@/lib/errors";
 
 export interface ActivityDB {
@@ -14,14 +14,22 @@ export interface ActivityDB {
   completed_at: string | null;
 }
 
+interface FocusSessionDB {
+  minutes: number;
+  activity_id: string | null;
+  completed_at: string;
+}
+
 export async function fetchActivities() {
-  const { data, error } = await supabase.from("activities").select();
+  const { data, error } = await supabase
+    .from("activities")
+    .select("*, focus_sessions(minutes, completed_at)");
   if (error) {
     console.error(error);
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return data.map((d) => changeKeys.camelCase(d));
+  return data.map((d) => changeKeys.camelCase(d, 3)) as Activity[];
 }
 
 export async function createActivity(activity: Activity) {
@@ -53,6 +61,16 @@ export async function updateActivity(
 export async function deleteActivity(id: string) {
   const { error } = await supabase.from("activities").delete().eq("id", id);
 
+  if (error) {
+    console.error(error);
+    const key = error.code ?? error.name;
+    throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
+  }
+}
+
+export async function createFocusSessions(focus: FocusSession) {
+  const newSession = changeKeys.snakeCase(focus) as FocusSessionDB;
+  const { error } = await supabase.from("focus_sessions").insert(newSession);
   if (error) {
     console.error(error);
     const key = error.code ?? error.name;

@@ -12,6 +12,7 @@ import { useState } from "react";
 import { ActivityDialog } from "./ActivityDialog";
 import { ActivityForm } from "./ActivityForm";
 import { toast } from "@/components/ui/toast";
+import { useAuth } from "../auth";
 
 interface ActivityProps {
   item: Activity;
@@ -19,6 +20,10 @@ interface ActivityProps {
 
 export default function Activity({ item }: ActivityProps) {
   const [openDialog, setOpenDialog] = useState(false);
+
+  const { claims } = useAuth();
+  const userId = claims?.sub;
+  const completed = userId ? item.focusSessions?.length || 0 : item.completed;
 
   const {
     updateActiveActivityId,
@@ -83,7 +88,7 @@ export default function Activity({ item }: ActivityProps) {
         <p>{item.title}</p>
         {activeActivityId === item.id && <span>Active</span>}
         <Badge>
-          {item.completed}/{item.estimation}
+          {completed}/{item.estimation}
         </Badge>
       </Button>
 

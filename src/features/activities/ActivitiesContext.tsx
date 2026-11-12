@@ -7,6 +7,7 @@ import {
 } from "@/lib/local-activities";
 import {
   createActivity,
+  createFocusSessions,
   deleteActivity,
   fetchActivities,
   updateActivity,
@@ -18,9 +19,19 @@ export interface Activity {
   title: string;
   estimation: number;
   completed: number;
-  focusMinutes: number;
+  focusMinutes: Record<string, number>;
+  focusSessions: {
+    minutes: number;
+    completedAt: string;
+  }[];
   done: boolean;
   completedAt: string | null;
+}
+
+export interface FocusSession {
+  minutes: number;
+  activityId: string | null;
+  completedAt: string;
 }
 
 interface ActivitiesContextType {
@@ -38,6 +49,7 @@ interface ActivitiesContextType {
     { title, estimation }: Partial<Activity>,
   ) => Promise<void>;
   removeActivity: (id: string) => Promise<void>;
+  completeFocusActivity: (minutes: number) => Promise<void>;
   setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
   openMergeDialog: boolean;
   loading: boolean;
@@ -91,7 +103,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       estimation,
       completed: 0,
-      focusMinutes: 0,
+      focusMinutes: {},
       done: false,
       completedAt: null,
     } as Activity;
@@ -144,6 +156,45 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function completeFocusActivity(minutes: number) {
+    const focus = {
+      minutes,
+      activityId: activeActivityId,
+      completedAt: new Date().toISOString(),
+    };
+    if (userId) {
+      await createFocusSessions(focus);
+      const updated = activities.map((activity) => {
+        return activity.id === activeActivityId
+          ? {
+              ...activity,
+              focusSessions: [...activity.focusSessions, focus],
+            }
+          : activity;
+      });
+
+      setActivities(updated);
+    } else {
+      const updated = activities.map((activity) => {
+        return activity.id === activeActivityId
+          ? {
+              ...activity,
+              completed: activity.completed + 1,
+              focusMinutes: {
+                ...activity.focusMinutes,
+                [minutes]: activity.focusMinutes[minutes]
+                  ? activity.focusMinutes[minutes] + 1
+                  : 1,
+              },
+            }
+          : activity;
+      });
+
+      setActivities(updated);
+      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
+    }
+  }
+
   useEffect(() => {
     // Fix this later(maybe)
     if (!userId) {
@@ -162,6 +213,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     localStorage.setItem("activityId", id);
     setActiveActivityId(id);
   }
+
   return (
     <Context
       value={{
@@ -173,6 +225,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
         addActivity,
         saveActivity,
         removeActivity,
+        completeFocusActivity,
         setOpenMergeDialog,
         openMergeDialog,
         error,
