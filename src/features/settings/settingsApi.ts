@@ -20,7 +20,7 @@ export async function fetchSettings() {
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return changeKeys.camelCase(data);
+  return changeKeys.camelCase(data) as Settings;
 }
 
 export async function updateSettings(id: string, settings: Settings) {
@@ -35,5 +35,5 @@ export async function updateSettings(id: string, settings: Settings) {
     const key = error.code ?? error.name;
     throw new Error(DISPLAY_MESSAGES[key] || DEFAULT_MESSAGE);
   }
-  return changeKeys.camelCase(data);
+  return changeKeys.camelCase(data) as Settings;
 }
