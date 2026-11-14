@@ -98,8 +98,8 @@ export default function Timer({ activeActivityId }: TimerProps) {
   }, [timerState, reset, focusState, DURATIONSMS]);
 
   return (
-    <Card className="w-lg py-4">
-      <CardHeader className="flex justify-center">
+    <Card className="w-full md:w-md max-w-lg py-4">
+      <CardHeader className="flex justify-center normal-case">
         <Tabs value={focusState} onValueChange={handleTabSwitch}>
           <TabsList variant="line" className="gap-1">
             {focusStateLabels.map((item) => (
@@ -111,18 +111,24 @@ export default function Timer({ activeActivityId }: TimerProps) {
         </Tabs>
       </CardHeader>
       <CardContent>
-        <div className="text-7xl font-bold tabular-nums flex justify-center">
+        <div className="text-8xl font-bold tabular-nums flex justify-center">
           {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-center gap-1">
+      <CardFooter className="flex justify-center gap-2">
         {(timerState === "idle" || timerState === "paused") && (
-          <Button onClick={handleStart}>
+          <Button size="lg" className="px-5" onClick={handleStart}>
             {timerState == "paused" ? "Continue" : "Start"}
           </Button>
         )}
-        {timerState === "running" && <Button onClick={pause}>Pause</Button>}
-        <Button onClick={handleReset}>Reset</Button>
+        {timerState === "running" && (
+          <Button size="lg" className="px-5" onClick={pause}>
+            Pause
+          </Button>
+        )}
+        <Button size="lg" className="px-5" onClick={handleReset}>
+          Reset
+        </Button>
       </CardFooter>
     </Card>
   );

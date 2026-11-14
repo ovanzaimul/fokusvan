@@ -39,7 +39,7 @@ export default function Activities() {
   }
 
   return (
-    <Card className="w-lg py-4">
+    <Card className="w-full md:w-md max-w-lg">
       <CardHeader className="flex items-center justify-between">
         <CardTitle>What are you focusing on?</CardTitle>
         <ActivityDialog

@@ -38,9 +38,8 @@ export default function AuthButton() {
         </Dialog>
       )}
       {claims && (
-        <div className="flex justify-between items-center">
-          <h2 className="text-emerald-100">Welcome, {username}</h2>
-
+        <div className="flex justify-between items-center gap-2">
+          <h2 className="text-foreground">Welcome, {username}</h2>
           <Button variant={"link"} onClick={handleSignOut}>
             Sign Out
           </Button>
