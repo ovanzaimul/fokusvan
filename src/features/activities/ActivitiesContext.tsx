@@ -209,10 +209,21 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     }
   }, [userId]);
 
-  function updateActiveActivityId(id: string) {
-    localStorage.setItem("activityId", id);
+  function updateActiveActivityId(id: string | null) {
+    localStorage.setItem("activityId", JSON.stringify(id));
     setActiveActivityId(id);
   }
+
+  useEffect(() => {
+    function syncActiveActivity() {
+      const activeActivityIndex = activities.findIndex(
+        (activity) => activity.id === activeActivityId,
+      );
+      if (activeActivityIndex < 0) updateActiveActivityId(null);
+    }
+
+    syncActiveActivity();
+  }, [activeActivityId, activities]);
 
   return (
     <Context
