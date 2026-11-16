@@ -81,9 +81,7 @@ export default function useTimer({
           clearInterval(intervalIdRef.current!);
           setTimeInMs(0);
           setTimerState("finished");
-          if (focusState == "focus") {
-            onComplete();
-          }
+          onComplete();
         }
       }, INTERVAL_DELAY_MS);
     }

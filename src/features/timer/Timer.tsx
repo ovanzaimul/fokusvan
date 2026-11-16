@@ -57,8 +57,22 @@ export default function Timer({ activeActivityId }: TimerProps) {
   const seconds = Math.floor((timeInMs / 1000) % 60);
 
   async function handleCompleteFocus() {
+    let updatedActivities;
     try {
-      await completeFocusActivity(settings.focusMinutes);
+      if (focusState === "focus") {
+        updatedActivities = await completeFocusActivity(settings.focusMinutes);
+      }
+
+      const completed =
+        updatedActivities?.find((activity) => activity.id === activeActivityId)
+          ?.completed || -1;
+      const nextBreak =
+        completed % settings.cycleLength == 0 ? "recovery" : "rest";
+      const nextState: FocusState =
+        focusState !== "focus" ? "focus" : nextBreak;
+      setFocusState(nextState);
+      localStorage.setItem("focusState", nextState);
+      reset(DURATIONSMS[nextState]);
     } catch (err) {
       console.error(err);
       toast.add({

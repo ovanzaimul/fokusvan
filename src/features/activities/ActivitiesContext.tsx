@@ -49,7 +49,7 @@ interface ActivitiesContextType {
     { title, estimation }: Partial<Activity>,
   ) => Promise<void>;
   removeActivity: (id: string) => Promise<void>;
-  completeFocusActivity: (minutes: number) => Promise<void>;
+  completeFocusActivity: (minutes: number) => Promise<Activity[]>;
   setOpenMergeDialog: React.Dispatch<React.SetStateAction<boolean>>;
   openMergeDialog: boolean;
   loading: boolean;
@@ -162,12 +162,14 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       activityId: activeActivityId,
       completedAt: new Date().toISOString(),
     };
+    let updated;
     if (userId) {
       await createFocusSessions(focus);
-      const updated = activities.map((activity) => {
+      updated = activities.map((activity) => {
         return activity.id === activeActivityId
           ? {
               ...activity,
+              completed: activity.completed + 1,
               focusSessions: [...activity.focusSessions, focus],
             }
           : activity;
@@ -175,7 +177,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
 
       setActivities(updated);
     } else {
-      const updated = activities.map((activity) => {
+      updated = activities.map((activity) => {
         return activity.id === activeActivityId
           ? {
               ...activity,
@@ -193,6 +195,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       setActivities(updated);
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
     }
+    return updated;
   }
 
   useEffect(() => {
