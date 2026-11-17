@@ -70,7 +70,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     initActivityId,
   );
   const [openMergeDialog, setOpenMergeDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const { claims } = useAuth();
@@ -202,6 +202,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     if (!userId) {
       const localActivities = readLocalActivities();
       setActivities(localActivities);
+      setLoading(false);
     } else {
       if (hasLocalActivities() && askToMerge) {
         setOpenMergeDialog(true);
@@ -212,20 +213,23 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   function updateActiveActivityId(id: string | null) {
-    localStorage.setItem("activityId", JSON.stringify(id));
+    localStorage.setItem("activityId", id);
     setActiveActivityId(id);
   }
 
   useEffect(() => {
     function syncActiveActivity() {
-      const activeActivityIndex = activities.findIndex(
-        (activity) => activity.id === activeActivityId,
+      if (loading) return;
+      const activeId = activeActivityId || localStorage.getItem("activityId");
+      const activeActivity = activities.find(
+        (activity) => activity.id === activeId,
       );
-      if (activeActivityIndex < 0) updateActiveActivityId(null);
+      if (!activeActivity) updateActiveActivityId(null);
+      else updateActiveActivityId(activeActivity.id);
     }
 
     syncActiveActivity();
-  }, [activeActivityId, activities]);
+  }, [activeActivityId, activities, loading]);
 
   return (
     <Context
