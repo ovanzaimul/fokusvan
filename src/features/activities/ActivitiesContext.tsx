@@ -60,15 +60,14 @@ const Context = createContext<ActivitiesContextType | null>(null);
 
 function initActivityId() {
   const activityId = localStorage.getItem("activityId");
-  return activityId;
+  return activityId || "";
 }
 const askToMerge = JSON.parse(localStorage.getItem("askToMerge") || "false");
 
 export function ActivityContext({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [activeActivityId, setActiveActivityId] = useState<string | null>(
-    initActivityId,
-  );
+  const [activeActivityId, setActiveActivityId] =
+    useState<string>(initActivityId);
   const [openMergeDialog, setOpenMergeDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -151,7 +150,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
     }
     if (id === activeActivityId) {
-      setActiveActivityId(null);
+      setActiveActivityId("");
       localStorage.removeItem("activityId");
     }
   }
@@ -212,8 +211,8 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     }
   }, [userId]);
 
-  function updateActiveActivityId(id: string | null) {
-    localStorage.setItem("activityId", id);
+  function updateActiveActivityId(id: string) {
+    localStorage.setItem("activityId", id || "");
     setActiveActivityId(id);
   }
 
@@ -224,7 +223,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       const activeActivity = activities.find(
         (activity) => activity.id === activeId,
       );
-      if (!activeActivity) updateActiveActivityId(null);
+      if (!activeActivity) updateActiveActivityId("");
       else updateActiveActivityId(activeActivity.id);
     }
 
