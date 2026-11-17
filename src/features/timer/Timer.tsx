@@ -64,8 +64,7 @@ export default function Timer({ activeActivityId }: TimerProps) {
       }
 
       const completed =
-        updatedActivities?.find((activity) => activity.id === activeActivityId)
-          ?.completed || -1;
+        updatedActivities?.reduce((acc, curr) => acc + curr.completed, 0) || -1;
       const nextBreak =
         completed % settings.cycleLength == 0 ? "recovery" : "rest";
       const nextState: FocusState =

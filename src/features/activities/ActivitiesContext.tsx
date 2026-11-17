@@ -170,7 +170,6 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
           ? {
               ...activity,
               completed: activity.completed + 1,
-              focusSessions: [...activity.focusSessions, focus],
             }
           : activity;
       });
