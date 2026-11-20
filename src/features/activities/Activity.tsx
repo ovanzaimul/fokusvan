@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Ellipsis, PenLine, Trash } from "lucide-react";
+import { Archive, Ellipsis, PenLine, Trash, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { ActivityDialog } from "./ActivityDialog";
 import { ActivityForm } from "./ActivityForm";
@@ -16,9 +16,10 @@ import { useAuth } from "../auth";
 
 interface ActivityProps {
   item: Activity;
+  type: "active" | "archived";
 }
 
-export default function Activity({ item }: ActivityProps) {
+export default function Activity({ item, type }: ActivityProps) {
   const [openDialog, setOpenDialog] = useState(false);
 
   const { claims } = useAuth();
@@ -29,6 +30,7 @@ export default function Activity({ item }: ActivityProps) {
     updateActiveActivityId,
     activeActivityId,
     removeActivity,
+    saveActivity,
     setActivities,
   } = useActivities();
 
@@ -77,13 +79,33 @@ export default function Activity({ item }: ActivityProps) {
     });
   }
 
+  async function handleArchive(id: string, item: Activity) {
+    const now = new Date().toISOString();
+    try {
+      await saveActivity(id, {
+        ...item,
+        archivedAt: type == "active" ? now : null,
+      });
+    } catch (err) {
+      console.error(err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      toast.add({
+        title: `Couldn't ${type == "active" ? "archive" : "unarchive"} "${item.title}".`,
+        description: message,
+      });
+    }
+  }
+
   return (
     <div className="flex gap-2">
       <Button
         variant="ghost"
         key={item.id}
         className="flex-1 justify-between"
-        onClick={() => updateActiveActivityId(item.id)}
+        onClick={() => type == "active" && updateActiveActivityId(item.id)}
       >
         <p>{item.title}</p>
         {activeActivityId === item.id && <span>Active</span>}
@@ -107,6 +129,15 @@ export default function Activity({ item }: ActivityProps) {
           >
             <Trash />
             Delete
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            variant="default"
+            className="text-primary"
+            onClick={() => handleArchive(item.id, item)}
+          >
+            {type == "active" ? <Archive /> : <Undo2 />}
+            {type == "active" ? "Archived" : "Unarchive"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

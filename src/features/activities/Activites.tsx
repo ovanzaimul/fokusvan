@@ -6,7 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { useActivities } from "./ActivitiesContext";
+import {
+  useActivities,
+  type Activity as ActivityType,
+} from "./ActivitiesContext";
 import { ActivityDialog } from "./ActivityDialog";
 import { ActivityForm } from "./ActivityForm";
 import MergeActivitiesDialog from "./MergeActivitiesDialog";
@@ -14,16 +17,28 @@ import { Spinner } from "@/components/ui/spinner";
 import Activity from "./Activity";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export default function Activities() {
+  const [isOpen, setIsOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
   const { activities, loading, error } = useActivities();
-  const sortedActivities = activities.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  const sortedActivities = activities
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .filter((activity) => activity.archivedAt === null);
+  const archived = activities.filter(
+    (activity) => activity.archivedAt !== null,
   );
-
-  function renderContent() {
+  function renderContent(data: ActivityType[], type: "active" | "archived") {
     if (error) return <p className="text-red-300">{error}</p>;
     if (loading)
       return (
@@ -31,10 +46,13 @@ export default function Activities() {
           <Spinner className="size-8" />
         </p>
       );
-    if (activities.length === 0) return <p>No activities yet.</p>;
+    if (data.length === 0)
+      return (
+        <p className="text-ring">{`No ${type == "archived" && "archived"} activities yet.`}</p>
+      );
 
-    return sortedActivities.map((item) => (
-      <Activity key={item.id} item={item} />
+    return data.map((item) => (
+      <Activity key={item.id} item={item} type={type} />
     ));
   }
 
@@ -59,9 +77,24 @@ export default function Activities() {
           />
         </ActivityDialog>
       </CardHeader>
-      <CardContent className="flex flex-col  gap-1">
+      <CardContent className="flex flex-col gap-1">
         <CardDescription>Activities:</CardDescription>
-        {renderContent()}
+        {renderContent(sortedActivities, "active")}
+        <Separator />
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CardDescription>
+            <CollapsibleTrigger
+              render={
+                <Button variant="link" className="p-0 hover:no-underline">
+                  Archived({archived.length}):
+                </Button>
+              }
+            />
+          </CardDescription>
+          <CollapsibleContent>
+            {renderContent(archived, "archived")}
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
       <MergeActivitiesDialog />
     </Card>

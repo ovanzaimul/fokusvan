@@ -26,6 +26,7 @@ export interface Activity {
   }[];
   done: boolean;
   completedAt: string | null;
+  archivedAt: string | null;
 }
 
 export interface FocusSession {
@@ -105,6 +106,7 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
       focusMinutes: {},
       done: false,
       completedAt: null,
+      archivedAt: null,
     } as Activity;
     if (userId) {
       // db(if signed in)
@@ -122,17 +124,21 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
 
   async function saveActivity(
     id: string,
-    { title, estimation }: Partial<Activity>,
+    { title, estimation, archivedAt }: Partial<Activity>,
   ) {
     if (userId) {
-      await updateActivity(id, { title, estimation });
+      await updateActivity(id, { title, estimation, archivedAt });
       const updated = activities.map((activity) =>
-        activity.id === id ? { ...activity, title, estimation } : activity,
+        activity.id === id
+          ? { ...activity, title, estimation, archivedAt }
+          : activity,
       ) as Activity[];
       setActivities(updated);
     } else {
       const updated = activities.map((activity) =>
-        activity.id === id ? { ...activity, title, estimation } : activity,
+        activity.id === id
+          ? { ...activity, title, estimation, archivedAt }
+          : activity,
       ) as Activity[];
       setActivities(updated);
       localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(updated));
