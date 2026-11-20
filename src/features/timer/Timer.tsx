@@ -86,7 +86,6 @@ export default function Timer() {
     const validActivity = activities.find(
       (activity) => activity.id === activeActivityId,
     );
-    console.log(validActivity, !!validActivity);
     if (!validActivity) {
       toast.add({
         type: "info",
