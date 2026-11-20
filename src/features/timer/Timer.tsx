@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { toast } from "../../components/ui/toast";
 import { useActivities } from "../activities";
+import { playSound } from "@/lib/sound";
 
 interface TimerProps {
   activeActivityId: string | null;
@@ -72,6 +73,7 @@ export default function Timer({ activeActivityId }: TimerProps) {
       setFocusState(nextState);
       localStorage.setItem("focusState", nextState);
       reset(DURATIONSMS[nextState]);
+      playSound(nextState);
     } catch (err) {
       console.error(err);
       toast.add({
