@@ -48,7 +48,7 @@ export default function Activities() {
       );
     if (data.length === 0)
       return (
-        <p className="text-ring">{`No ${type == "archived" && "archived"} activities yet.`}</p>
+        <p className="text-ring">{`No ${type === "archived" ? "archived" : ""} activities yet.`}</p>
       );
 
     return data.map((item) => (
