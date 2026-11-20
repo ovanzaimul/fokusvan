@@ -15,9 +15,6 @@ import { toast } from "../../components/ui/toast";
 import { useActivities } from "../activities";
 import { playSound } from "@/lib/sound";
 
-interface TimerProps {
-  activeActivityId: string | null;
-}
 export type FocusState = "focus" | "rest" | "recovery";
 
 const tabLabels: Record<FocusState, string> = {
@@ -34,10 +31,11 @@ function initFocusState(): FocusState {
   return "focus";
 }
 
-export default function Timer({ activeActivityId }: TimerProps) {
+export default function Timer() {
   const [focusState, setFocusState] = useState<FocusState>(initFocusState);
 
   const { settings } = useSettings();
+  const { activeActivityId, activities } = useActivities();
   const DURATIONSMS: Record<FocusState, number> = useMemo(
     () => ({
       focus: settings.focusMinutes * 60 * 1000,
@@ -85,7 +83,11 @@ export default function Timer({ activeActivityId }: TimerProps) {
   }
 
   function handleStart() {
-    if (!activeActivityId) {
+    const validActivity = activities.find(
+      (activity) => activity.id === activeActivityId,
+    );
+    console.log(validActivity, !!validActivity);
+    if (!validActivity) {
       toast.add({
         type: "info",
         title: "Choose an activity first",

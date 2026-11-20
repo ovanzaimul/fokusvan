@@ -222,20 +222,6 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     setActiveActivityId(id);
   }
 
-  useEffect(() => {
-    function syncActiveActivity() {
-      if (loading) return;
-      const activeId = activeActivityId || localStorage.getItem("activityId");
-      const activeActivity = activities.find(
-        (activity) => activity.id === activeId,
-      );
-      if (!activeActivity) updateActiveActivityId("");
-      else updateActiveActivityId(activeActivity.id);
-    }
-
-    syncActiveActivity();
-  }, [activeActivityId, activities, loading]);
-
   return (
     <Context
       value={{
