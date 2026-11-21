@@ -171,11 +171,12 @@ export function ActivityContext({ children }: { children: React.ReactNode }) {
     if (userId) {
       await createFocusSessions(focus);
       updated = activities.map((activity) => {
+        const sessions = activity.focusSessions ?? [];
         return activity.id === activeActivityId
           ? {
               ...activity,
               completed: activity.completed + 1,
-              focusSessions: [...activity.focusSessions, focus],
+              focusSessions: [...sessions, focus],
             }
           : activity;
       });
