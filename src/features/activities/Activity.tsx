@@ -24,7 +24,7 @@ export default function Activity({ item, type }: ActivityProps) {
 
   const { claims } = useAuth();
   const userId = claims?.sub;
-  const completed = userId ? item.focusSessions?.length : item.completed;
+  const completed = userId ? item.focusSessions?.length || 0 : item.completed;
 
   const {
     updateActiveActivityId,
